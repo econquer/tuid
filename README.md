@@ -1,4 +1,4 @@
-# TUID (Time-sequential Unique Ientifier)
+# TUID (Time-sequential Unique Identifier)
 
 [![Jitpack](https://jitpack.io/v/toss/tuid.svg)](https://jitpack.io/#toss/tuid)
 [![Build Status](https://travis-ci.org/toss/tuid.svg?branch=master)](https://travis-ci.org/toss/tuid)
@@ -15,10 +15,10 @@
 
 ```kotlin
 // generate a new tuid string
-val idValue = tuid()
+val idValue = tuid(123) // for type 123 identifier
 
 // generate a new tuid object
-val id = TUID()
+val id = TUID(123) // for type 123 identifier 
 
 // generate a tuid object from identifier value
 val id = TUID("Uzzzzz15ftgFAbwd5I0hIej11STX") 
