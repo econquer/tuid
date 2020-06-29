@@ -10,6 +10,14 @@
 * 사람이 읽을 수 있도록 ASCII TEXT로 표현한다.
 * ID의 값만 보고 개체의 유형을 이해 할 수 있다.
 
+## Setup
+[Add dependency](https://jitpack.io/#toss/tuid/v0.0.1) to project
+
+## Usage
+```
+TUID()
+```
+
 ## Format
 TUID는 62진수 ASCII([0-9A-Za-z])로 표현되며,
 총 28개의 문자로된 6개의 그룹을 묶어서 표현한다
