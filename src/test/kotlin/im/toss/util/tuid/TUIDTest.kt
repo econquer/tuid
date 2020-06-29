@@ -8,18 +8,20 @@ import org.junit.jupiter.api.TestFactory
 import java.time.Instant
 import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
-import kotlin.random.Random
+import java.util.concurrent.TimeUnit
+import java.util.concurrent.atomic.AtomicLong
+import kotlin.system.measureNanoTime
 
 internal class TUIDTest {
     @Test
     fun test() {
-        TUID("1jpaGA0mOSnUQPa6j1yG39IW9KTX").run {
-            instant equalsTo ZonedDateTime.parse("2020-06-29T01:34:26.715094700+09:00").toInstant()
-            datetime.toOffsetDateTime() equalsTo ZonedDateTime.parse("2020-06-29T01:34:26.715094700+09:00").toOffsetDateTime()
-            runtime equalsTo 24197467695L
-            random equalsTo -1595093560L
-            count equalsTo 578
-            type equalsTo 1831
+        TUID("Uzzzzz15ftgFAbwd5I0hIej11STX").run {
+            instant equalsTo Instant.parse("2869-12-18T01:36:31.999999999Z")
+            datetime.toOffsetDateTime() equalsTo ZonedDateTime.parse("2869-12-18T10:36:31.999999999+09:00").toOffsetDateTime()
+            fingerprint equalsTo 9722026020L
+            random equalsTo 10319821
+            sequence equalsTo 63
+            type equalsTo 109463
         }
     }
     @Test
@@ -29,7 +31,7 @@ internal class TUIDTest {
 
     @Test
     fun `TUID runtime`() {
-        TUID().runtime equalsTo TUIDGenerator.DEFAULT.runtimeFingerprint
+        TUID().fingerprint equalsTo TUIDGenerator.DEFAULT.fingerprint
     }
 
     @TestFactory
@@ -39,8 +41,9 @@ internal class TUIDTest {
             1 to 1,
             100 to 100,
             1000 to 1000,
-            3000 to -844,
-            5000 to 1156 // 0~3843
+            5000 to 5000,
+            25000 to 25000,
+            55000 to 55000
         ).map { (typeIdentifier, expected) ->
             dynamicTest("if typeIdentifier is $typeIdentifier, expect $expected") {
                 TUID(tuid(typeIdentifier, Instant.now(), 0, 0, 0)).type equalsTo expected
@@ -60,7 +63,7 @@ internal class TUIDTest {
     @Test
     fun sequentialTest() {
         val ids = (0..1000).map {
-            TUID(Random.nextInt())
+            TUID(it)
         }
 
         ids.forEach { println(it) }
@@ -74,6 +77,18 @@ internal class TUIDTest {
         val instant = Instant.ofEpochSecond(timestamp.toEpochSecond(), 123_456_789)
         val tuidValue = tuid(0, instant, 999, 9999, 1234)
         val tuid = TUID(tuidValue)
-        tuid.toString() equalsTo "1jpOLd08M0kX0002bH0000JuG700"
+        tuid.toString() equalsTo "1jpOLd08M0kX0002bH000JuG7000"
+    }
+
+    @Test
+    fun tuidPerformanceTest() {
+        TUID() // warmup
+        val totalNanoElapsed = AtomicLong()
+        for(i in 1..1_000_000) {
+            totalNanoElapsed.addAndGet(measureNanoTime { tuid() })
+        }
+
+        val millisElapsed = TimeUnit.NANOSECONDS.toMillis(totalNanoElapsed.get())
+        println("generate tuid $millisElapsed ms elapsed in 1,000,000 times")
     }
 }

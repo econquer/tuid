@@ -11,35 +11,88 @@ import java.time.ZonedDateTime
 import java.util.*
 import java.util.concurrent.atomic.AtomicInteger
 
+/**
+ * Generate a TUID String
+ */
+fun tuid(type: Int = 0): String = TUIDGenerator.DEFAULT.next(type)
+
+/**
+ * Generate a TUID Object
+ */
+fun TUID(type: Int): TUID = TUID(tuid(type))
+
+
 fun tuid(
     type: Int,
     now: Instant,
-    count: Int,
-    runtime: Long,
+    sequence: Int,
+    fingerprint: Int,
     random: Int
-): String {
-    /* 6 */ val secs = I62.of(now.epochSecond, 6)
-    /* 6 */ val nanos = I62.of(now.nano, 6)
-    /* 6 */ val rtm = I62.of(runtime, 6)
-    /* 6 */ val rnd = I62.of(random, 6)
-    /* 2 */ val cnt = I62.of(count, 2)
-    /* 2 */ val tp = I62.of(type, 2)
-    return "$secs$nanos$rtm$rnd$cnt$tp"
-}
+): String = tuid(
+    type,
+    now,
+    sequence,
+    I62.of(fingerprint, 6),
+    random
+)
 
-fun tuid(type: Int = 0): String = TUIDGenerator.DEFAULT.next(type)
-fun TUID(type: Int): TUID = TUID(tuid(type))
+private fun tuid(
+    type: Int,
+    now: Instant,
+    sequence: Int,
+    fingerprint: String, // encoded
+    random: Int
+): String = tuid(
+    I62.of(now.epochSecond, 6),
+    I62.of(now.nano, 6),
+    fingerprint,
+    I62.of(random, 5),
+    I62.of(sequence, 2),
+    I62.of(type, 3)
+)
 
+private fun tuid(
+    epochSecond: String,
+    nanos: String,
+    fingerprint: String,
+    random: String,
+    sequence: String,
+    type: String
+): String = StringBuilder(28)
+    .append(epochSecond)
+    .append(nanos)
+    .append(fingerprint)
+    .append(random)
+    .append(sequence)
+    .append(type)
+    .toString()
+
+/*----------------------------------------------------------------------+
+| name          | offset | length(bytes) | description                  |
+|---------------|--------|---------------|------------------------------|
+| epoch_seconds |      0 |             6 | seconds since epoch          |
+| nanos         |      6 |             6 | nanoseconds since timestamp  |
+| fingerprint   |     12 |             6 | fingerprint of generator     |
+| random        |     18 |             5 | random value                 |
+| sequence      |     23 |             2 | sequential value             |
+| type          |     25 |             3 | type of identifier           |
++----------------------------------------------------------------------*/
 data class TUID(val value: String = tuid()): Comparable<TUID> {
-    val type: Int get() = I62.toInt(value.substring(26, 28))
-    val datetime: ZonedDateTime get() = ZonedDateTime.ofInstant(instant, ZoneId.systemDefault())
-    val instant: Instant get() = Instant.ofEpochSecond(epochSeconds, nanoseconds)
-    val runtime: Long get() = I62.toLong(value.substring(12, 18))
-    val random: Long get() = I62.toLong(value.substring(18, 24))
-    val count: Int get() = I62.toInt(value.substring(24, 26))
+    init {
+        if (value.length != 28) {
+            throw IllegalArgumentException("length of the tuid must be 28: $value -> ${value.length}")
+        }
+    }
 
-    private val epochSeconds: Long get() = I62.toLong(value.substring(0, 6))
-    private val nanoseconds: Long get() = I62.toLong(value.substring(6, 12))
+    val type: Int get() = I62.toInt(value.substring(25, 28))
+    val datetime: ZonedDateTime get() = ZonedDateTime.ofInstant(instant, ZoneId.systemDefault())
+    val instant: Instant get() = Instant.ofEpochSecond(epochSeconds, nanos)
+    val fingerprint: Long get() = I62.toLong(value.substring(12, 18))
+    val random: Int get() = I62.toInt(value.substring(18, 23))
+    val sequence: Int get() = I62.toInt(value.substring(23, 25))
+
+    val epochSeconds: Long get() = I62.toLong(value.substring(0, 6))
+    val nanos: Long get() = I62.toLong(value.substring(6, 12))
 
     override fun toString(): String {
         return value
@@ -51,20 +104,21 @@ data class TUID(val value: String = tuid()): Comparable<TUID> {
 class TUIDGenerator(
     private val clock: Clock = NanoClock.DEFAULT,
     private val random: Random = SecureRandom(),
-    private val counter: AtomicInteger = AtomicInteger(),
-    runtime: Long = RuntimeInstance.fingerprint
+    private val sequence: AtomicInteger = AtomicInteger(),
+    fingerprint: Long = RuntimeInstance.fingerprint
 ) {
     companion object {
         val DEFAULT = TUIDGenerator()
     }
 
-    val runtimeFingerprint = I62.toLong(I62.of(runtime, 6))
+    private val encodedFingerprint = I62.of(fingerprint, 6)
+    val fingerprint = I62.toLong(encodedFingerprint)
 
-    fun next(typeIdentifier: Int): String = tuid(
-        typeIdentifier,
+    fun next(type: Int): String = tuid(
+        type,
         clock.instant(),
-        counter.incrementAndGet(),
-        runtimeFingerprint,
+        sequence.incrementAndGet(),
+        encodedFingerprint,
         random.nextInt()
     )
 }
