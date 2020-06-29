@@ -5,10 +5,13 @@
 [![codecov](https://codecov.io/gh/toss/tuid/branch/master/graph/badge.svg)](https://codecov.io/gh/toss/tuid)
 
 ## Purpose
-* 분산된 환경에서 대량으로 동시에 생성하여도 고유성을 가진다.
-* 사전순으로 정렬 시 생성 시간으로 순서성을 가진다.
-* 사람이 읽을 수 있도록 ASCII TEXT로 표현한다.
-* ID의 값만 보고 개체의 유형을 이해 할 수 있다.
+#### Unique 
+분산된 환경에서 대량으로 동시에 생성하여도 고유성을 가진다.
+#### Monotonically increasing 
+Identifier를 발행시 마다 시간순으로 단조롭게 증가하여 순서성을 가진다.
+#### Readable
+사람이 읽을 수 있도록 ASCII TEXT로 표현한다.
+값으로부터 개체의 유형을 이해 할 수 있다.
 
 ## Usage
 [Add dependency](https://jitpack.io/#toss/tuid/v0.0.1) to project and follow this example
