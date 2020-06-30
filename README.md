@@ -7,8 +7,11 @@
 ## Purpose
 #### Unique 
 분산된 환경에서 대량으로 동시에 생성하여도 고유성을 가진다.
+
 #### Monotonically increasing 
 Identifier를 발행시 마다 시간순으로 단조롭게 증가하여 순서성을 가진다.
+항상 정렬되어 저장되는 db의 primary key같은 목적으로 사용 시 이점이 있다.
+
 #### Readable
 사람이 읽을 수 있도록 ASCII TEXT로 표현한다.
 값으로부터 개체의 유형을 이해 할 수 있다.
@@ -23,7 +26,7 @@ val idValue = tuid(123) // for type 123 identifier
 // generate a new tuid object
 val id = TUID(123) // for type 123 identifier 
 
-// generate a tuid object from identifier value
+// create a tuid object from identifier value
 val id = TUID("Uzzzzz15ftgFAbwd5I0hIej11STX") 
 
 id.type // get type of identifier
