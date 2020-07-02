@@ -1,6 +1,7 @@
 package im.toss.util.tuid
 
 import im.toss.test.equalsTo
+import im.toss.util.data.encoding.i62.I62
 import org.junit.jupiter.api.DynamicTest
 import org.junit.jupiter.api.DynamicTest.dynamicTest
 import org.junit.jupiter.api.Test
@@ -34,6 +35,12 @@ internal class TUIDTest {
         TUID().fingerprint equalsTo TUIDGenerator.DEFAULT.fingerprint
     }
 
+    @Test
+    fun `TUID Version`() {
+        TUID("1jqqUl05DsR6nLRW5ZmF6Cz01000").version equalsTo 1
+        TUID("1jqqUl2BLneRnLRW5ZmF6Cz01000").version equalsTo 3
+    }
+
     @TestFactory
     fun `typeIdentifier test`(): List<DynamicTest> {
         return listOf(
@@ -46,7 +53,7 @@ internal class TUIDTest {
             55000 to 55000
         ).map { (typeIdentifier, expected) ->
             dynamicTest("if typeIdentifier is $typeIdentifier, expect $expected") {
-                TUID(tuid(typeIdentifier, Instant.now(), 0, 0, 0)).type equalsTo expected
+                TUID(tuid_v1(typeIdentifier, Instant.now(), 0, 0, 0)).type equalsTo expected
             }
         }
     }
@@ -55,7 +62,7 @@ internal class TUIDTest {
     fun instantTest() {
         val timestamp = ZonedDateTime.parse("2020-06-28T12:51:17.000+09:00", DateTimeFormatter.ISO_ZONED_DATE_TIME)
         val instant = Instant.ofEpochSecond(timestamp.toEpochSecond(), 123_456_789)
-        val tuidValue = tuid(0, instant, 999, 0, 1234)
+        val tuidValue = tuid_v1(0, instant, 999, 0, 1234)
         val tuid = TUID(tuidValue)
         tuid.instant equalsTo instant
     }
@@ -75,7 +82,7 @@ internal class TUIDTest {
     fun toStringTest() {
         val timestamp = ZonedDateTime.parse("2020-06-28T12:51:17.000+09:00", DateTimeFormatter.ISO_ZONED_DATE_TIME)
         val instant = Instant.ofEpochSecond(timestamp.toEpochSecond(), 123_456_789)
-        val tuidValue = tuid(0, instant, 999, 9999, 1234)
+        val tuidValue = tuid_v1(0, instant, 999, 9999, 1234)
         val tuid = TUID(tuidValue)
         tuid.toString() equalsTo "1jpOLd08M0kX0002bH000JuG7000"
     }

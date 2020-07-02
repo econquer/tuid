@@ -22,13 +22,13 @@ fun tuid(type: Int = 0): String = TUIDGenerator.DEFAULT.next(type)
 fun TUID(type: Int): TUID = TUID(tuid(type))
 
 
-fun tuid(
+fun tuid_v1(
     type: Int,
     now: Instant,
     sequence: Int,
     fingerprint: Int,
     random: Int
-): String = tuid(
+): String = tuid_v1(
     type,
     now,
     sequence,
@@ -36,13 +36,13 @@ fun tuid(
     random
 )
 
-private fun tuid(
+private fun tuid_v1(
     type: Int,
     now: Instant,
     sequence: Int,
     fingerprint: String, // encoded
     random: Int
-): String = tuid(
+): String = tuid_v1(
     I62.of(now.epochSecond, 6),
     I62.of(now.nano, 6),
     fingerprint,
@@ -51,7 +51,7 @@ private fun tuid(
     I62.of(type, 3)
 )
 
-private fun tuid(
+private fun tuid_v1(
     epochSecond: String,
     nanos: String,
     fingerprint: String,
@@ -71,7 +71,7 @@ private fun tuid(
 | name          | offset | length(bytes) | description                  |
 |---------------|--------|---------------|------------------------------|
 | epoch_seconds |      0 |             6 | seconds since epoch          |
-| nanos         |      6 |             6 | nanoseconds since timestamp  |
+| nanos+version |      6 |             6 | nanoseconds since timestamp  |
 | fingerprint   |     12 |             6 | fingerprint of generator     |
 | random        |     18 |             5 | random value                 |
 | sequence      |     23 |             2 | sequential value             |
@@ -92,7 +92,8 @@ data class TUID(val value: String = tuid()): Comparable<TUID> {
     val sequence: Int get() = I62.toInt(value.substring(23, 25))
 
     val epochSeconds: Long get() = I62.toLong(value.substring(0, 6))
-    val nanos: Long get() = I62.toLong(value.substring(6, 12))
+    val nanos: Long get() = I62.toLong(value.substring(6, 12)) % 1_000_000_000L
+    val version: Int get() = (I62.toLong(value.substring(6, 12)) / 1_000_000_000L).toInt() + 1
 
     override fun toString(): String {
         return value
@@ -114,7 +115,7 @@ class TUIDGenerator(
     private val encodedFingerprint = I62.of(fingerprint, 6)
     val fingerprint = I62.toLong(encodedFingerprint)
 
-    fun next(type: Int): String = tuid(
+    fun next(type: Int): String = tuid_v1(
         type,
         clock.instant(),
         sequence.incrementAndGet(),

@@ -43,7 +43,7 @@ TUID는 62진수 ASCII([0-9A-Za-z])로 표현되며,
 | name          | offset | length(bytes) | description                  |
 |---------------|--------|---------------|------------------------------|
 | epoch_seconds |      0 |             6 | seconds since epoch          |
-| nanos         |      6 |             6 | nanoseconds since timestamp  |
+| nanos+version |      6 |             6 | nanoseconds since timestamp + tuid version  |
 | fingerprint   |     12 |             6 | fingerprint of generator     |
 | random        |     18 |             5 | random value                 |
 | sequence      |     23 |             2 | sequential value             |
@@ -53,10 +53,24 @@ TUID는 62진수 ASCII([0-9A-Za-z])로 표현되며,
 
 `Uzzzzz15ftgFAbwd5I0hIej11STX` => `Uzzzzz 15ftgF Abwd5I 0hIej 11 STX` 
 
-|         | epoch_seconds | nanos     | fingerprint |  random  | sequence | type_id |
-|---------|---------------|-----------|-------------|----------|----------|---------|
-| value   | Uzzzzz        | 15ftgF    |  Abwd5I     |    0hIej |       11 |     STX |
-| decimal | 28400117791   | 999999999 |  9722026020 | 10319821 |       63 |  109463 |
+|         | epoch_seconds | nanos+version | fingerprint |  random  | sequence | type_id |
+|---------|---------------|---------------|-------------|----------|----------|---------|
+| value   | Uzzzzz        | 15ftgF        |  Abwd5I     |    0hIej |       11 |     STX |
+| decimal | 28400117791   | 999,999,999   |  9722026020 | 10319821 |       63 |  109463 |
+
+
+### part: nanos+version
+nanos초 단위와 tuid 버전정보를 산술적으로 묶어서 표현한다.
+```
+nanos+version = I62(nanos + ((tuid version - 1) * 1_000_000_000))
+```
+
+1초는 1,000,000,000 나노초이므로 표현에 필요한 최대 나노초는 999,999,999이다.
+
+version이 3이고 1111인 경우
+1111 + ((3 - 1) * 1000000000) = 2000001111
+nanos+version파트의 값은 `2000001111`가 된다.
+62진수로 표현하면 `2BLneR`이다 
 
 ## Limits
 ### 표현 가능한 최대 시간
