@@ -1,7 +1,7 @@
 # TUID (Time-sequential Unique Identifier)
 
 [![Jitpack](https://jitpack.io/v/toss/tuid.svg)](https://jitpack.io/#toss/tuid)
-[![Build Status](https://travis-ci.org/toss/tuid.svg?branch=master)](https://travis-ci.org/toss/tuid)
+[![Build Status](https://travis-ci.org/toss/tuid.svg?branch=master)](https://travis-ci.com/toss/tuid)
 [![codecov](https://codecov.io/gh/toss/tuid/branch/master/graph/badge.svg)](https://codecov.io/gh/toss/tuid)
 
 ## Purpose

@@ -7,6 +7,7 @@ import org.junit.jupiter.api.DynamicTest.dynamicTest
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestFactory
 import java.time.Instant
+import java.time.ZoneId
 import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
 import java.util.concurrent.TimeUnit
@@ -18,7 +19,7 @@ internal class TUIDTest {
     fun test() {
         TUID("Uzzzzz15ftgFAbwd5I0hIej11STX").run {
             instant equalsTo Instant.parse("2869-12-18T01:36:31.999999999Z")
-            datetime.toOffsetDateTime() equalsTo ZonedDateTime.parse("2869-12-18T10:36:31.999999999+09:00").toOffsetDateTime()
+            datetime.withZoneSameInstant(ZoneId.of("Asia/Seoul")).toOffsetDateTime() equalsTo ZonedDateTime.parse("2869-12-18T10:36:31.999999999+09:00").toOffsetDateTime()
             fingerprint equalsTo 9722026020L
             random equalsTo 10319821
             sequence equalsTo 63
