@@ -54,18 +54,17 @@ internal class TUIDTest {
             55000 to 55000
         ).map { (typeIdentifier, expected) ->
             dynamicTest("if typeIdentifier is $typeIdentifier, expect $expected") {
-                TUID(tuid_v1(typeIdentifier, Instant.now(), 0, 0, 0)).type equalsTo expected
+                TUID(tuid_v1(typeIdentifier, 0, 0, 0, 0, 0)).type equalsTo expected
             }
         }
     }
 
     @Test
     fun instantTest() {
-        val timestamp = ZonedDateTime.parse("2020-06-28T12:51:17.000+09:00", DateTimeFormatter.ISO_ZONED_DATE_TIME)
-        val instant = Instant.ofEpochSecond(timestamp.toEpochSecond(), 123_456_789)
-        val tuidValue = tuid_v1(0, instant, 999, 0, 1234)
+        val timestamp = ZonedDateTime.parse("2020-06-28T12:51:17.123456789+09:00", DateTimeFormatter.ISO_ZONED_DATE_TIME)
+        val tuidValue = tuid_v1(0, timestamp.toEpochSecond(), timestamp.nano, 999, 0, 1234)
         val tuid = TUID(tuidValue)
-        tuid.instant equalsTo instant
+        tuid.instant equalsTo timestamp.toInstant()
     }
 
     @Test
@@ -82,8 +81,7 @@ internal class TUIDTest {
     @Test
     fun toStringTest() {
         val timestamp = ZonedDateTime.parse("2020-06-28T12:51:17.000+09:00", DateTimeFormatter.ISO_ZONED_DATE_TIME)
-        val instant = Instant.ofEpochSecond(timestamp.toEpochSecond(), 123_456_789)
-        val tuidValue = tuid_v1(0, instant, 999, 9999, 1234)
+        val tuidValue = tuid_v1(0, timestamp.toEpochSecond(), 123_456_789, 999, 9999, 1234)
         val tuid = TUID(tuidValue)
         tuid.toString() equalsTo "1jpOLd08M0kX0002bH000JuG7000"
     }

@@ -24,13 +24,15 @@ fun TUID(type: Int): TUID = TUID(tuid(type))
 
 fun tuid_v1(
     type: Int,
-    now: Instant,
+    epochSecond: Long,
+    nanos: Int,
     sequence: Int,
     fingerprint: Int,
     random: Int
 ): String = tuid_v1(
     type,
-    now,
+    epochSecond,
+    nanos,
     sequence,
     I62.of(fingerprint, 6),
     random
@@ -38,13 +40,14 @@ fun tuid_v1(
 
 private fun tuid_v1(
     type: Int,
-    now: Instant,
+    epochSecond: Long,
+    nanos: Int,
     sequence: Int,
     fingerprint: String, // encoded
     random: Int
 ): String = tuid_v1(
-    I62.of(now.epochSecond, 6),
-    I62.of(now.nano, 6),
+    I62.of(epochSecond, 6),
+    I62.of(nanos, 6),
     fingerprint,
     I62.of(random, 5),
     I62.of(sequence, 2),
@@ -115,11 +118,14 @@ class TUIDGenerator(
     private val encodedFingerprint = I62.of(fingerprint, 6)
     val fingerprint = I62.toLong(encodedFingerprint)
 
-    fun next(type: Int): String = tuid_v1(
-        type,
-        clock.instant(),
-        sequence.incrementAndGet(),
-        encodedFingerprint,
-        random.nextInt()
-    )
+    fun next(type: Int): String = clock.instant().run {
+        tuid_v1(
+            type,
+            epochSecond,
+            nano,
+            sequence.incrementAndGet(),
+            encodedFingerprint,
+            random.nextInt()
+        )
+    }
 }

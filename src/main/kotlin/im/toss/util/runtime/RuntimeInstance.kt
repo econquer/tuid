@@ -14,8 +14,8 @@ object RuntimeInstance {
         val networkInterface = NetworkInterface.getByInetAddress(localAddress)
         networkInterface.hardwareAddress
     } catch (e: Throwable) {
-        seed.nextBytes(20)
-    }
+        null
+    } ?: seed.nextBytes(20)
 
     val fingerprint: Long =
         MessageDigest.getInstance("SHA-1")
