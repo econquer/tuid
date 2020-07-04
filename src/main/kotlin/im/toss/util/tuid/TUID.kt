@@ -94,7 +94,7 @@ data class TUID(val value: String = tuid()): Comparable<TUID> {
     val random: Int get() = I62.toInt(value.substring(18, 23))
     val sequence: Int get() = I62.toInt(value.substring(23, 25))
 
-    val epochSeconds: Long get() = I62.toLong(value.substring(0, 6))
+    val epochSeconds: Long get() = I62.toLong(value.substring(0, 6), false)
     val nanos: Long get() = I62.toLong(value.substring(6, 12)) % 1_000_000_000L
     val version: Int get() = (I62.toLong(value.substring(6, 12)) / 1_000_000_000L).toInt() + 1
 

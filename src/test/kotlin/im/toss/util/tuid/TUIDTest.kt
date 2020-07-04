@@ -1,7 +1,6 @@
 package im.toss.util.tuid
 
 import im.toss.test.equalsTo
-import im.toss.util.data.encoding.i62.I62
 import org.junit.jupiter.api.DynamicTest
 import org.junit.jupiter.api.DynamicTest.dynamicTest
 import org.junit.jupiter.api.Test
@@ -26,6 +25,14 @@ internal class TUIDTest {
             type equalsTo 109463
         }
     }
+
+    @Test
+    fun `epoch_second part limit test`() {
+        val MAXVALUE_I62_L6_UNSIGNED = 56800235583L
+        tuid_v1(0, MAXVALUE_I62_L6_UNSIGNED, 0, 0, 0, 0) equalsTo "zzzzzz0000000000000000000000"
+        TUID("zzzzzz0000000000000000000000").instant equalsTo Instant.parse("3769-12-05T03:13:03Z")
+    }
+
     @Test
     fun `TUID length equals 28`() {
         TUID().value.length equalsTo 28

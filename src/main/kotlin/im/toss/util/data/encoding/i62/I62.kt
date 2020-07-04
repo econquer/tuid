@@ -89,9 +89,9 @@ object I62 {
         return String(buffer)
     }
 
-    fun toBigInteger(i62value: CharSequence): BigInteger {
+    fun toBigInteger(i62value: CharSequence, signed: Boolean = true): BigInteger {
         val longPart = i62value.subSequence(0, min(i62value.length, 10))
-        var value = toLong(longPart).toBigInteger()
+        var value = toLong(longPart, signed).toBigInteger()
         if (i62value.length > 10) {
             for (i in 10 until i62value.length) {
                 value *= BIGINT_62
@@ -107,9 +107,9 @@ object I62 {
         return value
     }
 
-    fun toLong(i62value: CharSequence): Long {
+    fun toLong(i62value: CharSequence, signed: Boolean = true): Long {
         if (i62value.length >= 11) {
-            return toBigInteger(i62value).longValueExact()
+            return toBigInteger(i62value, signed).longValueExact()
         }
         var value = 0L
         for (i in 0 until i62value.length) {
@@ -124,10 +124,11 @@ object I62 {
 
             value += v
         }
-        return ComplementLong.decode(value, i62value.length)
+
+        return if (signed) ComplementLong.decode(value, i62value.length) else value
     }
 
-    fun toInt(i62value: CharSequence): Int = toLong(i62value).toInt()
+    fun toInt(i62value: CharSequence, signed: Boolean = true): Int = toLong(i62value, signed).toInt()
 
     object ComplementInt {
         private val base = run {

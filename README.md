@@ -17,7 +17,7 @@ Identifier를 발행시 마다 시간순으로 단조롭게 증가하여 순서�
 값으로부터 개체의 유형을 이해 할 수 있다.
 
 ## Usage
-[Add dependency](https://jitpack.io/#toss/tuid/v0.0.1) to project and follow this example
+[Add dependency](https://jitpack.io/#toss/tuid) to project and follow this example
 
 ```kotlin
 // generate a new tuid string
@@ -74,7 +74,7 @@ nanos+version파트의 값은 `2000001111`가 된다.
 
 ## Limits
 ### 표현 가능한 최대 시간
-2869-12-18T01:36:31.999999999Z
+v1: 3769-12-05T03:13:03.999999999Z
 
 ### 같은 ID가 발급될 가능성
 아래의 모든 조건이 일치한 경우, 같은 ID가 발급될 수 있다.
