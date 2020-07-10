@@ -3,6 +3,7 @@ package im.toss.util.time
 import java.time.Clock
 import java.time.Instant
 import java.time.ZoneId
+import java.util.concurrent.atomic.AtomicInteger
 import java.util.concurrent.atomic.AtomicReference
 import kotlin.math.abs
 
@@ -14,7 +15,8 @@ import kotlin.math.abs
 class NanoClock(
     private val clockSource: ClockSource = SystemClockSource,
     private val zone: ZoneId = ZoneId.systemDefault(),
-    private val synchronizedClockSnapshotReference: AtomicReference<SynchronizedClockSnapshot> = AtomicReference(clockSource.synchronizeWithRealtime(10))
+    private val synchronizedClockSnapshotReference: AtomicReference<SynchronizedClockSnapshot> = AtomicReference(clockSource.synchronizeWithRealtime(10)),
+    private val calibrationCounter: AtomicInteger = AtomicInteger()
 ): Clock() {
     companion object {
         private const val NANOS_PER_MILLI = 1_000_000L
@@ -44,22 +46,26 @@ class NanoClock(
 
     private fun snapshotWithCalibration(monotonicNanos: Long): SynchronizedClockSnapshot {
         val snapshot = synchronizedClockSnapshotReference.get()
+        return if (isNeedsCalibration(clockSource, monotonicNanos, snapshot)) {
+            calibration()
+       } else snapshot
+    }
+
+    private fun isNeedsCalibration(clockSource: ClockSource, monotonicNanos: Long, snapshot: SynchronizedClockSnapshot): Boolean {
         val realtimeMillis = clockSource.realtimeMillis()
         val realtimeMillisSinceBase = (realtimeMillis - snapshot.realtimeMillis) * 1_000_000L
         val nanosSinceBase = monotonicNanos - snapshot.monotonicNanos
-        val diff = abs(nanosSinceBase - realtimeMillisSinceBase - 500_000L)
-
-        return if (diff < 1_000_000L) {
-            snapshot
-        } else {
-            calibration()
-        }
+        return abs(nanosSinceBase - realtimeMillisSinceBase - 500_000L) > 1_000_000L
     }
 
-    private fun calibration(): SynchronizedClockSnapshot {
-        val newBaseTime = clockSource.synchronizeWithRealtime(3)
-        synchronizedClockSnapshotReference.set(newBaseTime)
-        return newBaseTime
+    private fun calibration(): SynchronizedClockSnapshot = synchronized(synchronizedClockSnapshotReference) {
+        val snapshot = synchronizedClockSnapshotReference.get()
+        if (isNeedsCalibration(clockSource, clockSource.monotonicNanos(), snapshot)) {
+            val newSnapshot = clockSource.synchronizeWithRealtime(5)
+            synchronizedClockSnapshotReference.set(newSnapshot)
+            calibrationCounter.incrementAndGet()
+            newSnapshot
+        } else snapshot
     }
 }
 
@@ -78,7 +84,6 @@ object SystemClockSource: ClockSource {
     override fun monotonicNanos(): Long = System.nanoTime()
     override fun realtimeMillis(): Long = System.currentTimeMillis()
 }
-
 
 private fun ClockSource.synchronizeWithRealtime(): SynchronizedClockSnapshot {
     while (true) {
